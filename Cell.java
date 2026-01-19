@@ -1,42 +1,42 @@
-// Cell
+// Cell class for Conway's Game of Life
 
 // Any live cell with fewer than two live
-// neighbours dies, as if by underpopulation.​
+// neighbours dies, as if by underpopulation.
 
 // Any live cell with two or three live neighbours
-// lives on to the next generation.​
+// lives on to the next generation.
 
 // Any live cell with more than three live
-// neighbours dies, as if by overpopulation.​
+// neighbours dies, as if by overpopulation.
 
 // Any dead cell with exactly three live
 // neighbours becomes a live cell, as if by
 // reproduction.
 
-public class Cell{
+public class Cell {
 
-    static int mapSize = 0;
-
-    private int posX=0;
-    private int posY=0;
+    private int posX = 0;
+    private int posY = 0;
     private int state = 0; // 1: alive, 0: dead
-    
+
+    // Default constructor for Grid class compatibility
     public Cell() {
-        this.posY = 0;
         this.posX = 0;
+        this.posY = 0;
         this.state = 0;
-        this.mapSize = 0;
     }
 
-    Cell(int x, int y, int liveness, int size){
-        this.posX=x;
-        this.posY=y;
-        this.state=liveness;
-        this.mapSize=size;
+    // Full constructor with position and state
+    public Cell(int x, int y, int liveness) {
+        this.posX = x;
+        this.posY = y;
+        this.state = liveness;
     }
 
-    public void checkNeighbours(Cell[][] grid) {
+    // Calculate next state based on neighbours (returns new state without modifying)
+    public int calculateNextState(Cell[][] grid) {
         int count = 0;
+        int mapSize = grid.length;
 
         // Check all 8 neighbors using coordinate offsets (-1, 0, +1)
         for (int dx = -1; dx <= 1; dx++) {
@@ -47,9 +47,8 @@ public class Cell{
                 int nx = posX + dx;
                 int ny = posY + dy;
 
-                // Single unified check for boundaries
+                // Check boundaries
                 if (nx >= 0 && nx < mapSize && ny >= 0 && ny < mapSize) {
-                    // If neighbour is alive (state 1), increment count
                     if (grid[nx][ny].getState() == 1) {
                         count++;
                     }
@@ -57,24 +56,33 @@ public class Cell{
             }
         }
 
-        // Apply Game of Life rules based on the count
+        // Apply Game of Life rules
         if (state == 1) { // Current cell is alive
             if (count < 2 || count > 3) {
-                state = 0; // Dies by underpopulation or overpopulation
+                return 0; // Dies
             }
+            return 1; // Survives
         } else { // Current cell is dead
             if (count == 3) {
-                state = 1; // Becomes alive by reproduction
+                return 1; // Becomes alive
             }
+            return 0; // Stays dead
         }
     }
 
-
-    public int getState(){
+    public int getState() {
         return state;
     }
 
-    public void setState(int mortality){
-        this.state=mortality;
+    public void setState(int mortality) {
+        this.state = mortality;
+    }
+
+    public int getPosX() {
+        return posX;
+    }
+
+    public int getPosY() {
+        return posY;
     }
 }
