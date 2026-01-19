@@ -20,7 +20,13 @@ public class Cell{
     private int posX=0;
     private int posY=0;
     private int state = 0; // 1: alive, 0: dead
-
+    
+    public Cell() {
+        this.posY = 0;
+        this.posX = 0;
+        this.state = 0;
+        this.mapSize = 0;
+    }
 
     Cell(int x, int y, int liveness, int size){
         this.posX=x;
