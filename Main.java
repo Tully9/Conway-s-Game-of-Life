@@ -1,53 +1,107 @@
-public class Main{
-        static int mapSize = 0;
+import javax.swing.*;
+import java.util.Arrays;
 
+public class Main {
+    private static final int SIZE = 50;
+    private static final int DELAY_MS = 200; // Delay between generations
 
-        public void checkNeighbours(){
+    public static void main(String[] args) {
+        // Step 1: Show InputWindow and wait for user to set up initial state
+        InputWindow inputWindow = new InputWindow();
+        inputWindow.waitForStart();
 
-            int count=0;
+        // Step 2: Get the grid from InputWindow
+        int[][] userInput = inputWindow.getGrid();
+        inputWindow.close();
 
-            // check neighbours, also taking into account bounds
-            
-            // we must check if cell is on the boundary. ..... 0 is boundary, for x and y, 
-            
-            //4 neighbours, first check bounds
-
-        
-            // change state depending on count
-            if(count<2){
-                state=0;
-            }else if((count==2)||(count==3)){
-                state=1;
-            }else if(count>3){
-                state=0;
+        // Step 3: Create Cell grid and initialize with user input
+        Cell[][] grid = new Cell[SIZE][SIZE];
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                grid[i][j] = new Cell(i, j, userInput[i][j]);
             }
         }
 
-        public int getState(){
-            return state;
-        }
+        // Step 4: Create the visual Grid display
+        Grid display = new Grid(grid);
 
-        public void setState(int mortality){
-            this.state=mortality;
-        }
-            
-        int[][] plane = new int[50][50]; // Initalise 2D array
-        boolean game = false;
+        // Step 5: Run the game loop
+        int generation = 0;
+        int[][] previousState = null;
 
-        UserInput(plane); // Returns the user's inputted pattern int a 2D array
+        while (true) {
+            generation++;
 
-        boolean stopGame = true;
+            // Store current state before updating
+            int[][] currentState = captureState(grid);
 
-        while (game) {
-            for (int i = 0; i < 50; i++) {
-                for (int j = 0; j < 50; j++) {
-                    checkNeighbours(plane[i][j]);
+            // Check if state is same as previous (game over condition)
+            if (previousState != null && statesEqual(currentState, previousState)) {
+                showGameOver(display, generation - 1);
+                break;
+            }
+
+            // Calculate next states for all cells (don't apply yet)
+            int[][] nextStates = new int[SIZE][SIZE];
+            for (int i = 0; i < SIZE; i++) {
+                for (int j = 0; j < SIZE; j++) {
+                    nextStates[i][j] = grid[i][j].calculateNextState(grid);
                 }
             }
 
-            if (stopGame) {
-                game = false;
+            // Apply all next states simultaneously
+            for (int i = 0; i < SIZE; i++) {
+                for (int j = 0; j < SIZE; j++) {
+                    grid[i][j].setState(nextStates[i][j]);
+                }
+            }
+
+            // Update the display
+            display.updateGrid();
+
+            // Store current state for next comparison
+            previousState = currentState;
+
+            // Delay for visibility
+            try {
+                Thread.sleep(DELAY_MS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
             }
         }
+    }
+
+    // Capture current grid state as 2D int array
+    private static int[][] captureState(Cell[][] grid) {
+        int[][] state = new int[SIZE][SIZE];
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                state[i][j] = grid[i][j].getState();
+            }
+        }
+        return state;
+    }
+
+    // Compare two states for equality
+    private static boolean statesEqual(int[][] state1, int[][] state2) {
+        for (int i = 0; i < SIZE; i++) {
+            if (!Arrays.equals(state1[i], state2[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Show game over dialog with score
+    private static void showGameOver(Grid display, int generations) {
+        SwingUtilities.invokeLater(() -> {
+            JOptionPane.showMessageDialog(
+                display,
+                "Game Over!\n\nYour pattern survived for " + generations + " generations.",
+                "Game Over",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+        });
     }
 }
